@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+<style>
+
+/* body{
+  background-color: cyan;
+} */
+
+.bar {
+    fill: orange;
+}
+  
+.hover {
+    fill: steelblue;
+}
+
+</style>
+</head>
+<body>
+    <br/><br/><br/><br/><br/><br/>
+    <center>
+        Change Bins: <input id="binSize" type='range' min="2" max="10" value="5">
+        <div id="drop"></div>
+        <button id="button" type="button">Change Chart</button>
+        <svg id="bargraph" width="1000" height="500"></svg>
+        <svg id="piechart" width="1000" height="500"></svg>
+    </center>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+  var binsCount = 5;
+  var svg = d3.select("svg"),
+        margin = 200,
+        width = svg.attr("width") - margin,
+        height = svg.attr("height") - margin;
+  g = svg.append("g").attr("transform", "translate(" + 10 + "," + 20 + ")");
+  
+  var x = d3.scaleLinear().rangeRound([0, width]);
+  var y = d3.scaleLinear();
+    
+/* BEGIN CSV READ */
+  pi = false;
+  d3.csv("College.csv", function (data) {
+    data = data.slice(0, 500)
+    var attrs = d3.values(data)[0]
+    //pie chart creation
+    function piechart(column)
+    {
+      map = data.map(function(d,i){ return (+d[column]); })
+      x.domain([d3.min(map),d3.max(map)]);
+      var bins = d3.histogram()
+          .domain(x.domain())
+          .thresholds(binsCount)(map);
+      y.domain([0, d3.max(bins, function(d) { return d.length; })])
+          .range([height, 0]);
+
+      var color = d3.scaleOrdinal(d3.schemeCategory20c);
+      var svg = d3.select("body").append("svg").attr("id", "piechart")
+              .attr("width", 1000).attr("height", 500),
+              width = svg.attr("width"),
+              height = svg.attr("height"),
+              radius = 200;
+      var g = svg.append("g")
+      .attr("transform", "translate(" + width/2 + "," + height/2 + ")");
+      pie = d3.pie().value(function(d){
+        return d.length;
+      });
+      cir = d3.arc().outerRadius(radius).innerRadius(0);
+      arc = g.selectAll(".arc").data(pie(bins)).enter().append("g")
+             .append("path").attr("d", cir)
+             .attr("fill", function(d, i){ return color(i)});
+      // svg.append("g").attr("transform", "translate("+width/2-120+",20)")
+    }
+    //end of pie chart implementation
+    // bargraph function
+    function bargraph(column){
+      svg = d3.select("body").append("svg").attr("id", "bargraph")
+              .attr("width", 1500).attr("height", 500)
+      var g = svg.append("g").attr("transform", "translate(" + 160 + "," + 20 + ")");
+      
+      map = data.map(function(d,i){ return (+d[column]); })
+      x.domain([d3.min(map),d3.max(map)]);
+      var bins = d3.histogram()
+          .domain(x.domain())
+          .thresholds(binsCount)(map);
+      y.domain([0, d3.max(bins, function(d) { return d.length; })])
+          .range([height, 0]);
+
+      g.append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", "translate(80," + 400 + ")")
+      .call(d3.axisBottom().scale(x));
+      g.append("g")
+          .call(d3.axisLeft().scale(y))
+          .attr("transform", "translate(80," + 100+ ")");
+      
+      var bar = g.selectAll(".bar")
+                .data(bins)
+                .enter().append("g")
+                .attr("class", "bar")
+                .attr("transform", function(d) {
+                  return "translate(" + x(d.x0) + "," + y(d.length) + ")"; 
+                });
+      bar.append("rect")
+          .attr("width", function(d) { return (x(d.x1) - x(d.x0) - 5)})
+          .attr("height", function(d) { return height - y(d.length); })
+          .attr("transform", "translate(81, 100)")
+          .on("mouseover", onMouseOver)
+          .on("mouseout", onMouseOut)
+          .transition()
+          .ease(d3.easeLinear)
+          .duration(200)
+          .delay(function(d, i){ return i*50; });
+      bar.transition().duration(300)
+        .attr("y", function(d, i){ return y(d.length); })
+        .attr("height",function(d, i){ return height - y(d.length); })
+      bar.exit().remove();
+    };
+    // end of bar graph
+
+    var change = d3.select("#button").on("click", changeChart);
+    var selectfrom = d3.select("#drop")
+                       .insert("select", "svg")
+                       .on("change", updategraph);
+    
+    var attributes = Object.keys(attrs);
+
+    selectfrom.selectAll("drop")
+              .data(attributes)
+              .enter()
+              .append("option")
+              .attr("value", function(d){ return d; })
+              .text(function(d){ return d; })
+    
+    d3.select("#binSize").on("input", getBins);
+    function getBins()
+    {
+      var sliderInput = d3.select(this).property("value");
+      console.log("si", sliderInput);
+      binsCount = parseInt(sliderInput);
+      console.log("bc", binsCount);
+      updategraph();
+    }
+    function updategraph()
+    {
+      console.log(binsCount);
+      d3.select("#piechart").remove();
+      d3.select("#bargraph").remove();
+      col = d3.select('select').property('value');
+      console.log(pi);
+      if(pi === true)
+      {
+        piechart(col);
+      }
+      else
+      {
+        bargraph(col);
+      }
+    }
+    function changeChart()
+    {
+      if(pi === true)
+      {
+        pi = false;
+      }
+      else
+      {
+        pi = true;
+      }
+      updategraph();
+    }
+  });
+/* END CSV READ */
+
+function onMouseOver(d, i) {
+      rect = d3.select(this).attr('class', 'hover'); 
+      rect.transition()
+        .duration(400)
+        .attr("width", x(d.x1) - x(d.x0))
+        .attr("height", function(d) { return height - y(d.length) + 10; })
+        .attr("transform", "translate(81,90)");
+
+      g.append("g").append("text")
+      .attr('class', 'val')
+      .attr('x', function() {
+          console.log((i+1)*(x(d.x1) - x(d.x0) ) - 250);
+          return (i+1)*(x(d.x1) - x(d.x0) ) + 50;
+      })
+      .attr('y', function() { 
+        console.log(y(d.length) + 10);
+        return y(d.length) + 105; 
+      })
+      .text(function() { console.log(d.length); return [+d.length]; });
+    }
+function onMouseOut(d, n){
+  d3.select(this).attr('class', 'bar');
+  d3.select(this).transition().duration(400)
+  .attr('width', x(d.x1) - x(d.x0) -5)
+  .attr("height", function(){ return height - y(d.length); })
+  .attr("transform", "translate(81, 100)");
+  d3.selectAll('.val').remove()
+}
+
+</script>
+</body>
+</html>
