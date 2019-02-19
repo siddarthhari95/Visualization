@@ -1,0 +1,49 @@
+
+.bar-chart {
+    background-color: #C7D9D9;
+}
+body{
+    background-color: skyblue;
+  }
+  
+.bar {
+    fill: rgb(20, 29, 156);
+}
+
+.hover {
+    fill: steelblue;
+}
+
+.tooltip{
+    position: absolute;
+    display: none;
+    min-width: 80px;
+    height: auto;
+    background: none repeat scroll 0 0 #ffffff;
+    border: 1px solid #6F257F;
+    padding: 14px;
+    text-align: center;
+}
+
+.slider {
+height: 26px;
+margin: 10px 0;
+width: 100%;
+}
+.slider::-webkit-slider-runnable-track {
+width: 100%;
+height: 14px;
+cursor: pointer;
+animate: 0.1s;
+box-shadow: 1px 1px 1px #50555C;
+/* background: #50555C; */
+background: orange;
+border-radius: 14px;
+border: 0px solid #000000;
+}
+.slider:focus::-ms-fill-lower {
+background: #50555C;
+}
+.slider:focus::-ms-fill-upper {
+background: #50555C;
+}
