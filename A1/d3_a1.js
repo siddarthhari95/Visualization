@@ -1,6 +1,6 @@
 
 /* ASSIGN DEFAULT BIN COUNT TO 5 */
-var binsCount = 5;
+var binsCount = parseInt(d3.select("#binSize").property("value"));
 
 /* CREATE A DEFAULT SVG WHICH WILL BE OVERRIDEN INSIDE BARGRAPH() AND PIECHART() FUNCTIONS */
 var svg = d3.select("svg"),
@@ -55,6 +55,12 @@ d3.csv("College.csv", function (data) {
         .attr("height", "100%")
         .attr("fill", "#E0FFFF")
         .attr("transform","translate(240,20)");
+    svg.append("text")
+        .attr("transform", "translate(300,0)")
+        .attr("x", 10)
+        .attr("y", 50)
+        .attr("font-size", "24px")
+        .text("U.S. News and World Report's College Data");
     var g = svg.append("g")
     .attr("transform", "translate(" + width/2 + "," + height/2 + ")");
     
@@ -106,6 +112,12 @@ d3.csv("College.csv", function (data) {
         .attr("height", "100%")
         .attr("fill", "#E0FFFF")
         .attr("transform","translate(270,20)");
+    svg.append("text")
+        .attr("transform", "translate(300,0)")
+        .attr("x", 10)
+        .attr("y", 50)
+        .attr("font-size", "24px")
+        .text("U.S. News and World Report's College Data");
     var g = svg.append("g").attr("transform", "translate(" + 160 + "," + 20 + ")");
     
     /* CREATE THE DATA THAT NEEDS TO BE BINNED WITHIN A RANGE */
@@ -180,6 +192,7 @@ d3.csv("College.csv", function (data) {
   {
     var sliderInput = d3.select(this).property("value");
     binsCount = parseInt(sliderInput);
+    console.log(binsCount);
     updategraph();
   }
 
